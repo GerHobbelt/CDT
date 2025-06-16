@@ -103,19 +103,23 @@ typedef LayerDepth BoundaryOverlapCount;
 class SourceLocation
 {
 public:
+    /// Constructor
     SourceLocation(const std::string& file, const std::string& func, int line)
         : m_file(file)
         , m_func(func)
         , m_line(line)
     {}
+    /// source file
     const std::string& file() const
     {
         return m_file;
     }
+    /// source function
     const std::string& func() const
     {
         return m_func;
     }
+    /// source line
     int line() const
     {
         return m_line;
@@ -169,6 +173,7 @@ private:
 class FinalizedError : public Error
 {
 public:
+    /// Constructor
     FinalizedError(const SourceLocation& srcLoc)
         : Error(
               "Triangulation was finalized with 'erase...' method. Further "
@@ -183,6 +188,7 @@ public:
 class DuplicateVertexError : public Error
 {
 public:
+    /// Constructor
     DuplicateVertexError(
         const VertInd v1,
         const VertInd v2,
@@ -194,10 +200,12 @@ public:
         , m_v1(v1)
         , m_v2(v2)
     {}
+    /// first duplicate
     VertInd v1() const
     {
         return m_v1;
     }
+    /// second duplicate
     VertInd v2() const
     {
         return m_v2;
@@ -214,6 +222,7 @@ private:
 class IntersectingConstraintsError : public Error
 {
 public:
+    /// Constructor
     IntersectingConstraintsError(
         const Edge& e1,
         const Edge& e2,
@@ -227,10 +236,12 @@ public:
         , m_e1(e1)
         , m_e2(e2)
     {}
+    /// first intersecting constraint
     const Edge& e1() const
     {
         return m_e1;
     }
+    /// second intersecting constraint
     const Edge& e2() const
     {
         return m_e2;
@@ -285,6 +296,10 @@ struct CDT_EXPORT TriangleChangeType
 class CDT_EXPORT ICallbackHandler
 {
 public:
+    /// Virtual destructor
+    virtual ~ICallbackHandler()
+    {}
+
     /**
      *  Called when super-triangle is added.
      * 1.Added three new vertices with indices 0, 1, 2
@@ -474,7 +489,7 @@ public:
      */
     void insertVertices(const std::vector<V2d<T> >& vertices);
     /**
-     * Insert constraint edges into triangulation for <b/>Constrained Delaunay
+     * Insert constraint edges into triangulation for <b>Constrained Delaunay
      * Triangulation</b> (for example see figure below).
      *
      * Uses only original vertices: no new verties are added
@@ -512,7 +527,7 @@ public:
         TGetEdgeVertexStart getStart,
         TGetEdgeVertexEnd getEnd);
     /**
-     * Insert constraint edges into triangulation for <b/>Constrained Delaunay
+     * Insert constraint edges into triangulation for <b>Constrained Delaunay
      * Triangulation</b> (for example see figure below).
      *
      * Uses only original vertices: no new verties are added
@@ -571,7 +586,7 @@ public:
         TGetEdgeVertexStart getStart,
         TGetEdgeVertexEnd getEnd);
     /**
-     * Insert constraint edges into triangulation for <b/>Conforming Delaunay
+     * Insert constraint edges into triangulation for <b>Conforming Delaunay
      * Triangulation</b> (for example see figure below).
      *
      * May add new vertices.
@@ -660,6 +675,10 @@ public:
      */
     void flipEdge(TriInd iT, TriInd iTopo);
 
+    /**
+     * Flip edge between two triangles given all the information such as
+     * triangle vertices and neighbors
+     */
     void flipEdge(
         TriInd iT,
         TriInd iTopo,
@@ -899,7 +918,7 @@ private:
     void tryInitNearestPointLocator();
 
     TNearPointLocator m_nearPtLocator;
-    IndexSizeType m_nTargetVerts;
+    VertInd m_nTargetVerts;
     SuperGeometryType::Enum m_superGeomType;
     VertexInsertionOrder::Enum m_vertexInsertionOrder;
     IntersectingConstraintEdges::Enum m_intersectingEdgesStrategy;
@@ -919,14 +938,17 @@ namespace detail
 /// SplitMix64  pseudo-random number generator
 struct SplitMix64RandGen
 {
-    typedef unsigned long long uint64;
-    uint64 m_state;
+    typedef unsigned long long uint64; ///< uint64 type
+    uint64 m_state;                    ///< PRNG's state
+    /// constructor
     explicit SplitMix64RandGen(uint64 state)
         : m_state(state)
     {}
+    /// default constructor
     explicit SplitMix64RandGen()
         : m_state(0)
     {}
+    /// functor's operator
     uint64 operator()()
     {
         uint64 z = (m_state += 0x9e3779b97f4a7c15);
@@ -936,6 +958,7 @@ struct SplitMix64RandGen
     }
 };
 
+/// backport from c++11
 template <class RandomIt>
 void random_shuffle(RandomIt first, RandomIt last)
 {
@@ -948,7 +971,7 @@ void random_shuffle(RandomIt first, RandomIt last)
     }
 }
 
-// backport from c++11
+/// backport from c++11
 template <class ForwardIt, class T>
 void iota(ForwardIt first, ForwardIt last, T value)
 {
@@ -1003,7 +1026,7 @@ void Triangulation<T, TNearPointLocator>::insertVertices(
     const bool isOverPreAllocated =
         m_intersectingEdgesStrategy ==
             IntersectingConstraintEdges::TryResolve &&
-        nNewVertices >= overAllocationVerticesThreshold;
+        VertInd(nNewVertices) >= overAllocationVerticesThreshold;
     if(isOverPreAllocated)
     {
         capacityTriangles *= overAllocationFactor;
