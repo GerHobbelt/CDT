@@ -40,6 +40,7 @@ CDT is a C++ library for generating constraint or conforming Delaunay triangulat
 <a name="what-can-cdt-do"></a>
 
 ## What can CDT do?
+
 <img src="./images/show-case.png" alt="CDT show-case: constrained and conforming triangulations, convex hulls, automatically removing holes" style='height: 100%; width: 100%; max-height: 300px; object-fit: contain'/>
 
 - Constrained Delaunay Triangulations: force edges into Delaunay triangulation
@@ -50,6 +51,7 @@ CDT is a C++ library for generating constraint or conforming Delaunay triangulat
 <a name="properly-handling-the-corner-cases"></a>
 
 ## Properly Handling the Corner-Cases
+
 <img src="./images/corner-cases.png" alt="CDT supported corner cases: points on edges, overlapping edges, resolving edge intersections" style='height: 100%; width: 100%; max-height: 300px; object-fit: contain'/>
 
 - Points exactly on the edges
@@ -60,6 +62,7 @@ CDT is a C++ library for generating constraint or conforming Delaunay triangulat
 <a name="online-documentation"></a>
 
 ## Online Documentation
+
 [**Latest online documentation**](https://artem-ogre.github.io/CDT/) (automatically generated with Doxygen).
 
 <a name="algorithm"></a>
@@ -105,13 +108,16 @@ when at least one vertex belongs to super-triangle are resolved using an approac
 ## Adding CDT to your C++ project Using a Package Manager
 
 ### vcpkg
+
 CDT port is [available](https://github.com/microsoft/vcpkg/tree/master/ports/cdt) in Microsoft's [vcpkg](https://github.com/microsoft/vcpkg).
 
 ### Conan
+
 CDT is not in the conan-center but there's a `conanfile.py` recipe provided (in this repo).
 Note that it might need small adjustments like changing boost version to fit your needs.
 
 ### spack
+
 A [recipe](https://github.com/spack/spack/blob/develop/var/spack/repos/builtin/packages/cdt/package.py) for CDT is [available](https://spack.readthedocs.io/en/latest/package_list.html#cdt) in [spack](https://spack.io).
 
 <a name="installationbuilding"></a>
