@@ -139,7 +139,7 @@ private:
  * Base class for errors. Contains error description and source location: file,
  * function, line
  */
-class Error : public std::runtime_error
+class CDT_EXPORT Error : public std::runtime_error
 {
 public:
     /// Constructor
@@ -170,7 +170,7 @@ private:
  * Error thrown when triangulation modification is attempted after it was
  * finalized
  */
-class FinalizedError : public Error
+class CDT_EXPORT FinalizedError : public Error
 {
 public:
     /// Constructor
@@ -185,7 +185,7 @@ public:
 /**
  * Error thrown when duplicate vertex is detected during vertex insertion
  */
-class DuplicateVertexError : public Error
+class CDT_EXPORT DuplicateVertexError : public Error
 {
 public:
     /// Constructor
@@ -219,7 +219,7 @@ private:
  * Error thrown when intersecting constraint edges are detected, but
  * triangulation is not configured to attempt to resolve them
  */
-class IntersectingConstraintsError : public Error
+class CDT_EXPORT IntersectingConstraintsError : public Error
 {
 public:
     /// Constructor
@@ -232,6 +232,43 @@ public:
                   CDT::to_string(e1.v1()) + ", " + CDT::to_string(e1.v2()) +
                   ") intersects (" + CDT::to_string(e2.v1()) + ", " +
                   CDT::to_string(e2.v2()) + ")",
+              srcLoc)
+        , m_e1(e1)
+        , m_e2(e2)
+    {}
+    /// first intersecting constraint
+    const Edge& e1() const
+    {
+        return m_e1;
+    }
+    /// second intersecting constraint
+    const Edge& e2() const
+    {
+        return m_e2;
+    }
+
+private:
+    Edge m_e1, m_e2;
+};
+
+/**
+ * Error thrown when resolving intersecting constraints fails: floating-point
+ * rounding places the computed split vertex outside the edge's adjacent
+ * triangles, so it can not be inserted
+ */
+class CDT_EXPORT InvalidEdgeSplitVertex : public Error
+{
+public:
+    /// Constructor
+    InvalidEdgeSplitVertex(
+        const Edge& e1,
+        const Edge& e2,
+        const SourceLocation& srcLoc)
+        : Error(
+              "Intersection of constraint edges (" + CDT::to_string(e1.v1()) +
+                  ", " + CDT::to_string(e1.v2()) + ") and (" +
+                  CDT::to_string(e2.v1()) + ", " + CDT::to_string(e2.v2()) +
+                  ") can not be resolved: computed split vertex is invalid",
               srcLoc)
         , m_e1(e1)
         , m_e2(e2)
@@ -897,6 +934,46 @@ private:
         const V2d<T>& splitVert,
         const TriInd iT,
         const TriInd iTopo);
+    /**
+     * Check that a fixed-edge split vertex computed from a constraint-edges
+     * intersection can be safely inserted.
+     *
+     * The split position is computed with floating-point arithmetic and may be
+     * rounded to a location that no longer lies within the two triangles
+     * sharing the edge being split. Inserting it there would produce an
+     * inverted/degenerate triangle and break triangulation invariants. As the
+     * point nominally lies on the split edge, its side relative to that edge
+     * selects the adjacent triangle it must be contained in; only the two other
+     * edges of that triangle are tested (robust predicates).
+     * @param splitVert position of the candidate split vertex
+     * @param iT index of a first triangle adjacent to the split edge
+     * @param iTopo index of a second triangle adjacent to the split edge
+     * @param iVL first vertex of the edge being split
+     * @param iVR second vertex of the edge being split
+     * @return true if the split vertex lies within the adjacent triangles
+     */
+    bool isEdgeSplitVertexValid(
+        const V2d<T>& splitVert,
+        TriInd iT,
+        TriInd iTopo,
+        VertInd iVL,
+        VertInd iVR) const;
+    /**
+     * Convert an internal edge to the original input edge it represents: resolve
+     * edge pieces to their original and drop the super-triangle vertex offset.
+     * Used to report meaningful edges in constraint-related exceptions.
+     * @param e internal edge
+     * @return corresponding original input edge
+     */
+    Edge originalInputEdge(const Edge& e) const;
+    /**
+     * Bounds-checked triangle access (like std::vector::at but throwing
+     * CDT::Error). Guards against dereferencing a 'noNeighbor' index, e.g. when
+     * an edge-insertion walk reaches the triangulation boundary.
+     * @param iT triangle index
+     * @return triangle at the given index
+     */
+    const Triangle& triangleAt(TriInd iT) const;
     /**
      * Depth-peel a layer in triangulation, used when calculating triangle
      * depths
